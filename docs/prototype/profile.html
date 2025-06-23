@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            padding-top: 44px; /* Space for status bar */
+            padding-bottom: 70px; /* Space for tab bar */
+            height: 100vh;
+            overflow: hidden;
+        }
+        main {
+            height: calc(100vh - 114px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-200 z-10">
+        <div class="px-4 h-14 flex items-center justify-center">
+            <h1 class="text-lg font-semibold text-gray-900">个人中心</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- User Info -->
+        <div class="p-4 flex items-center space-x-3">
+            <img src="https://placehold.co/100x100/a7f3d0/14532d?text=头像" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-white shadow-md">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">微信用户</h2>
+                <p class="text-sm text-gray-500">欢迎使用IOPaint</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="px-4 mb-4">
+            <div class="bg-white rounded-xl shadow-sm p-3">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <div class="text-lg font-bold text-blue-500">12</div>
+                        <div class="text-xs text-gray-500">处理次数</div>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-green-500">8</div>
+                        <div class="text-xs text-gray-500">成功作品</div>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-purple-500">25</div>
+                        <div class="text-xs text-gray-500">使用天数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action List -->
+        <div class="px-4">
+            <div class="bg-white rounded-xl shadow-sm">
+                <a href="#" class="flex items-center p-3 border-b border-gray-100">
+                    <i class="fas fa-images w-5 text-center text-blue-500"></i>
+                    <span class="ml-3 text-gray-800 text-sm">历史记录</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-400 text-xs"></i>
+                </a>
+
+                <a href="#" class="flex items-center p-3 border-b border-gray-100">
+                    <i class="fas fa-star w-5 text-center text-yellow-500"></i>
+                    <span class="ml-3 text-gray-800 text-sm">给我们评分</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-400 text-xs"></i>
+                </a>
+                <a href="#" class="flex items-center p-3">
+                    <i class="fas fa-info-circle w-5 text-center text-gray-500"></i>
+                    <span class="ml-3 text-gray-800 text-sm">关于我们</span>
+                    <i class="fas fa-chevron-right ml-auto text-gray-400 text-xs"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Logout Button -->
+        <div class="px-4 mt-4">
+             <div class="bg-white rounded-xl shadow-sm">
+                <a href="#" class="flex items-center justify-center p-3 text-red-500 font-semibold text-sm">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span>退出登录</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 h-16 flex justify-around items-center z-10">
+        <a href="#" class="text-center text-gray-500">
+            <i class="fas fa-home"></i>
+            <span class="block text-xs mt-1">首页</span>
+        </a>
+        <a href="#" class="text-center text-gray-500">
+            <i class="fas fa-history"></i>
+            <span class="block text-xs mt-1">历史</span>
+        </a>
+        <a href="#" class="text-center text-blue-500">
+            <i class="fas fa-user"></i>
+            <span class="block text-xs mt-1">我的</span>
+        </a>
+    </nav>
+
+</body>
+</html> 

@@ -17,9 +17,9 @@ class UserCRUD:
         """根据OpenID获取用户"""
         return db.query(User).filter(User.openid == openid).first()
     
-    def create(self, db: Session, user_data: Dict[str, Any]) -> User:
+    def create(self, db: Session, user_data: UserProfileCreate) -> User:
         """创建新用户"""
-        user = User(**user_data)
+        user = User(**user_data.model_dump())
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -34,12 +34,14 @@ class UserCRUD:
         db.refresh(user)
         return user
     
-    def update_login_info(self, db: Session, user: User) -> User:
+    def update_login_info(self, db: Session, user_id: int) -> User:
         """更新登录信息"""
-        user.login_count += 1
-        user.last_login_at = datetime.utcnow()
-        db.commit()
-        db.refresh(user)
+        user = self.get_by_id(db, user_id)
+        if user:
+            user.login_count += 1
+            user.last_login_at = datetime.utcnow()
+            db.commit()
+            db.refresh(user)
         return user
     
     def get_user_stats(self, db: Session, user_id: int, days: int = 30) -> Dict[str, Any]:

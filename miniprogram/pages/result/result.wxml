@@ -1,7 +1,150 @@
 <!--pages/result/result.wxml-->
-<view class="container">
-  <view class="result-placeholder">
-    <text>结果展示页面</text>
-    <text>（将在后续任务中实现）</text>
+<view class="result-container">
+  <!-- 顶部导航 -->
+  <view class="result-header">
+    <view class="header-left" bind:tap="goBack">
+      <text class="back-icon">←</text>
+      <text class="back-text">返回</text>
+    </view>
+    <text class="header-title">处理完成</text>
+    <view class="header-right" bind:tap="shareResult">
+      <text class="share-icon">↗</text>
+    </view>
+  </view>
+
+  <!-- 成功消息 -->
+  <view wx:if="{{processInfo.status === 'success'}}" class="success-message">
+    <view class="success-content">
+      <text class="success-icon">✅</text>
+      <view class="success-text">
+        <text class="success-title">处理成功！</text>
+        <text class="success-desc">耗时 {{processInfo.duration}} · {{processInfo.model}} 模型</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图像对比区域 -->
+  <view class="comparison-section">
+    <!-- 对比模式切换 -->
+    <view class="comparison-tabs">
+      <t-tabs value="{{viewMode}}" bind:change="onViewModeChange">
+        <t-tab-panel value="compare" label="对比" />
+        <t-tab-panel value="original" label="原图" />
+        <t-tab-panel value="result" label="结果" />
+      </t-tabs>
+    </view>
+
+    <!-- 图像展示区域 -->
+    <view class="image-container">
+      <!-- 对比模式 -->
+      <view wx:if="{{viewMode === 'compare'}}" class="comparison-view">
+        <view class="comparison-slider" bind:touchstart="onSliderStart" bind:touchmove="onSliderMove">
+          <!-- 原图 -->
+          <t-image 
+            src="{{processInfo.originalImage}}" 
+            mode="aspectFit"
+            class="comparison-image original-layer"
+          />
+          
+          <!-- 结果图 (带裁剪) -->
+          <view class="result-layer" style="clip-path: polygon({{sliderPosition}}% 0%, 100% 0%, 100% 100%, {{sliderPosition}}% 100%);">
+            <t-image 
+              src="{{processInfo.resultImage}}" 
+              mode="aspectFit"
+              class="comparison-image result-overlay"
+            />
+          </view>
+          
+          <!-- 滑动手柄 -->
+          <view class="slider-handle" style="left: {{sliderPosition}}%;">
+            <view class="handle-circle">
+              <text class="handle-icon">⇄</text>
+            </view>
+          </view>
+          
+          <!-- 分割线 -->
+          <view class="divider-line" style="left: {{sliderPosition}}%;"></view>
+        </view>
+
+        <!-- 标签 -->
+        <view class="comparison-labels">
+          <text class="label-left">
+            <text class="label-icon">🖼️</text>
+            处理前
+          </text>
+          <text class="label-right">
+            处理后
+            <text class="label-icon">🖼️</text>
+          </text>
+        </view>
+      </view>
+
+      <!-- 单图模式 -->
+      <view wx:else class="single-view">
+        <t-image 
+          src="{{viewMode === 'original' ? processInfo.originalImage : processInfo.resultImage}}" 
+          mode="aspectFit"
+          class="single-image"
+          show-loading
+          loading-placeholder="加载中..."
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 图片信息 -->
+  <view class="image-info">
+    <view class="info-header">
+      <text class="info-title">图片信息</text>
+    </view>
+    <t-cell-group>
+      <t-cell title="尺寸" note="{{processInfo.dimensions}}" />
+      <t-cell title="格式" note="{{processInfo.format}}" />
+      <t-cell title="文件大小" note="{{processInfo.fileSize}}" />
+      <t-cell title="处理时间" note="{{processInfo.processTime}}" />
+    </t-cell-group>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <view class="action-buttons">
+      <t-button 
+        size="large"
+        theme="light"
+        bind:tap="saveToAlbum"
+        class="action-btn save-btn"
+      >
+        <text slot="icon">💾</text>
+        保存
+      </t-button>
+      
+      <t-button 
+        size="large"
+        theme="primary"
+        bind:tap="shareResult"
+        class="action-btn share-btn"
+      >
+        <text slot="icon">📤</text>
+        分享
+      </t-button>
+    </view>
+    
+    <t-button 
+      size="large"
+      theme="default"
+      bind:tap="processAgain"
+      class="process-again-btn"
+    >
+      <text slot="icon">🔄</text>
+      基于此图再次处理
+    </t-button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-overlay">
+    <view class="loading-content">
+      <t-loading size="64rpx" />
+      <text class="loading-text">{{loadingText}}</text>
+    </view>
   </view>
 </view>

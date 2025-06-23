@@ -1,182 +1,188 @@
 // pages/index/index.js
+const { post } = require('../../utils/request')
+
 Page({
   data: {
-    userInfo: {},
-    hasUnreadNotifications: false,
-    recentHistory: []
-  },
-
-  onLoad() {
-    this.checkLoginStatus()
-    this.loadUserInfo()
+    bannerImage: '/assets/banner.jpg',
+    recentWorks: [],
+    features: [
+      {
+        icon: '🤖',
+        title: '智能识别',
+        desc: 'AI自动识别需要修复的区域'
+      },
+      {
+        icon: '⚡',
+        title: '快速修复',
+        desc: '一键完成图像修复处理'
+      },
+      {
+        icon: '🎨',
+        title: '高清输出',
+        desc: '保持原图质量的修复效果'
+      }
+    ],
+    isLoggedIn: false,
+    userInfo: null
   },
 
   onShow() {
+    console.log('首页显示')
     this.loadUserInfo()
-    this.loadRecentHistory()
-  },
-
-  // 检查登录状态
-  checkLoginStatus() {
-    const app = getApp()
-    if (!app.globalData.isLoggedIn) {
-      wx.redirectTo({
-        url: '/pages/login/login'
-      })
-    }
+    this.loadRecentWorks()
   },
 
   // 加载用户信息
   loadUserInfo() {
     const app = getApp()
-    if (app.globalData.userInfo) {
+    const userInfo = app.globalData.userInfo
+    const isLoggedIn = app.globalData.isLoggedIn
+
+    if (isLoggedIn && userInfo) {
+      console.log('用户已登录:', userInfo.nickName)
       this.setData({
-        userInfo: app.globalData.userInfo
+        isLoggedIn: true,
+        userInfo: userInfo
+      })
+    } else {
+      console.log('用户未登录，但允许浏览')
+      this.setData({
+        isLoggedIn: false,
+        userInfo: null
       })
     }
   },
 
-  // 加载最近历史记录
-  loadRecentHistory() {
-    // 使用模拟数据（无需后端服务）
-    console.log('加载历史记录（模拟数据）')
-    this.setData({
-      recentHistory: [
-        {
-          id: 1,
-          title: '风景照修复',
-          thumbnail: 'https://picsum.photos/300/300?random=1',
-          status: 'success',
-          statusText: '处理成功',
-          createTime: '1小时前'
-        },
-        {
-          id: 2,
-          title: '人像照片处理', 
-          thumbnail: 'https://picsum.photos/300/300?random=2',
-          status: 'success',
-          statusText: '处理成功',
-          createTime: '昨天'
+  // 加载最近作品
+  async loadRecentWorks() {
+    if (!this.data.isLoggedIn) {
+      // 未登录时显示示例作品
+      this.setData({
+        recentWorks: []
+      })
+      return
+    }
+
+    try {
+      const result = await post('/api/v1/user/recent-works', {
+        limit: 6
+      })
+      
+      if (result.success) {
+        this.setData({
+          recentWorks: result.data || []
+        })
+      }
+    } catch (error) {
+      console.error('获取最近作品失败，使用模拟数据:', error)
+      // 使用模拟数据
+      this.setData({
+        recentWorks: [
+          {
+            id: 1,
+            thumbnail: 'https://via.placeholder.com/200x150/f0f0f0/666666?text=老照片修复',
+            title: '老照片修复',
+            createTime: '2024-01-15'
+          },
+          {
+            id: 2,
+            thumbnail: 'https://via.placeholder.com/200x150/f0f0f0/666666?text=水印移除',
+            title: '水印移除',
+            createTime: '2024-01-14'
+          },
+          {
+            id: 3,
+            thumbnail: 'https://via.placeholder.com/200x150/f0f0f0/666666?text=物体移除',
+            title: '物体移除',
+            createTime: '2024-01-13'
+          }
+        ]
+      })
+    }
+  },
+
+  // 开始创作 - 检查登录状态
+  async startEdit() {
+    if (!this.data.isLoggedIn) {
+      // 未登录，跳转到登录页面
+      wx.navigateTo({
+        url: '/pages/login/login'
+      })
+      return
+    }
+
+    // 已登录，选择图片
+    this.selectImage()
+  },
+
+  // 选择图片
+  selectImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      maxDuration: 30,
+      camera: 'back',
+      success: (res) => {
+        if (res.tempFiles && res.tempFiles.length > 0) {
+          const tempFilePath = res.tempFiles[0].tempFilePath
+          
+          // 跳转到编辑页面
+          wx.navigateTo({
+            url: `/pages/editor/editor?imagePath=${encodeURIComponent(tempFilePath)}`
+          })
         }
-      ]
+      },
+      fail: (error) => {
+        console.error('选择图片失败:', error)
+        if (error.errMsg && !error.errMsg.includes('cancel')) {
+          wx.showToast({
+            title: '选择图片失败',
+            icon: 'error',
+            duration: 2000
+          })
+        }
+      }
     })
   },
 
-  // 开始编辑
-  startEditing() {
+  // 查看作品详情
+  viewWork(e) {
+    const workId = e.currentTarget.dataset.id
     wx.navigateTo({
-      url: '/pages/editor/editor'
+      url: `/pages/result/result?workId=${workId}`
     })
   },
 
-  // 快捷移除物体
-  quickRemoveObject() {
-    wx.navigateTo({
-      url: '/pages/editor/editor?mode=remove-object'
-    })
-  },
+  // 查看更多作品
+  viewMoreWorks() {
+    if (!this.data.isLoggedIn) {
+      // 未登录，跳转到登录页面
+      wx.navigateTo({
+        url: '/pages/login/login'
+      })
+      return
+    }
 
-  // 快捷移除人物
-  quickRemovePerson() {
-    wx.navigateTo({
-      url: '/pages/editor/editor?mode=remove-person'
-    })
-  },
-
-  // 快捷移除文字
-  quickRemoveText() {
-    wx.navigateTo({
-      url: '/pages/editor/editor?mode=remove-text'
-    })
-  },
-
-  // 快捷图像增强
-  quickEnhance() {
-    wx.navigateTo({
-      url: '/pages/editor/editor?mode=enhance'
-    })
-  },
-
-  // 查看所有历史记录
-  viewAllHistory() {
     wx.switchTab({
       url: '/pages/history/history'
     })
   },
 
-  // 查看历史记录详情
-  viewHistoryDetail(e) {
-    const id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: `/pages/result/result?id=${id}`
-    })
-  },
-
-  // 重新编辑
-  reEdit(e) {
-    e.stopPropagation()
-    const id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: `/pages/editor/editor?historyId=${id}`
-    })
-  },
-
-  // 查看结果
-  viewResult(e) {
-    e.stopPropagation()
-    const id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: `/pages/result/result?id=${id}`
-    })
-  },
-
-  // 显示通知
-  showNotifications() {
-    wx.showToast({
-      title: '暂无新通知',
-      icon: 'none'
-    })
-  },
-
-  // 获取状态文本
-  getStatusText(status) {
-    const statusMap = {
-      'pending': '处理中',
-      'processing': '处理中',
-      'success': '处理成功',
-      'failed': '处理失败'
-    }
-    return statusMap[status] || '未知状态'
-  },
-
-  // 格式化时间
-  formatTime(timestamp) {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diff = now - date
-    
-    if (diff < 60000) {
-      return '刚刚'
-    } else if (diff < 3600000) {
-      return `${Math.floor(diff / 60000)}分钟前`
-    } else if (diff < 86400000) {
-      return `${Math.floor(diff / 3600000)}小时前`
-    } else {
-      return `${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`
-    }
-  },
-
-  // 下拉刷新
-  onPullDownRefresh() {
-    this.loadRecentHistory()
-    wx.stopPullDownRefresh()
-  },
-
-  // 页面分享
+  // 分享功能
   onShareAppMessage() {
     return {
-      title: 'IOPaint - AI智能图像修复',
-      path: '/pages/index/index'
+      title: 'IOPaint - 专业的AI图像修复工具',
+      path: '/pages/index/index',
+      imageUrl: '/assets/share-image.jpg'
+    }
+  },
+
+  // 分享到朋友圈
+  onShareTimeline() {
+    return {
+      title: 'IOPaint - 让图像修复变得简单',
+      imageUrl: '/assets/share-image.jpg'
     }
   }
-}) 
+})

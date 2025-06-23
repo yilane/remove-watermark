@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            padding-top: 44px; /* Space for status bar */
+            padding-bottom: 70px; /* Space for tab bar */
+            height: 100vh;
+            overflow: hidden;
+        }
+        main {
+            height: calc(100vh - 114px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-200 z-10">
+        <div class="px-4 h-14 flex items-center justify-center">
+            <h1 class="text-lg font-semibold text-gray-900">首页</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="p-4">
+        <div class="bg-blue-500 text-white rounded-xl p-6 text-center shadow-lg mb-4">
+            <i class="fas fa-magic-wand-sparkles fa-2x mb-3"></i>
+            <h2 class="text-lg font-bold mb-1">AI图像修复</h2>
+            <p class="text-sm mb-4 opacity-90">轻松移除不需要的元素</p>
+            <button class="bg-white text-blue-500 font-semibold py-2 px-6 rounded-full shadow-md text-sm">
+                <i class="fas fa-upload mr-2"></i>开始创作
+            </button>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-3">最近作品</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Placeholder Item 1 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <img src="https://placehold.co/400x400/e2e8f0/adb5bd?text=作品1" alt="作品1" class="w-full h-24 object-cover">
+                    <div class="p-2">
+                        <p class="text-sm font-semibold text-gray-700">风景照修复</p>
+                        <p class="text-xs text-gray-500">2天前</p>
+                    </div>
+                </div>
+                <!-- Placeholder Item 2 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <img src="https://placehold.co/400x400/e0f2fe/3c82f6?text=作品2" alt="作品2" class="w-full h-24 object-cover">
+                    <div class="p-2">
+                        <p class="text-sm font-semibold text-gray-700">旧照片上色</p>
+                        <p class="text-xs text-gray-500">5天前</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 h-16 flex justify-around items-center z-10">
+        <a href="#" class="text-center text-blue-500">
+            <i class="fas fa-home"></i>
+            <span class="block text-xs mt-1">首页</span>
+        </a>
+        <a href="#" class="text-center text-gray-500 hover:text-blue-500">
+            <i class="fas fa-history"></i>
+            <span class="block text-xs mt-1">历史</span>
+        </a>
+        <a href="#" class="text-center text-gray-500 hover:text-blue-500">
+            <i class="fas fa-user"></i>
+            <span class="block text-xs mt-1">我的</span>
+        </a>
+    </nav>
+
+</body>
+</html> 

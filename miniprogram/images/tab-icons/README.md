@@ -1,35 +1,38 @@
-# TabBar图标说明
+# TabBar 图标说明
 
 ## 需要的图标文件
 
+请在此目录下添加以下图标文件（建议尺寸 81x81 像素）：
+
 ### 首页图标
-- `home.png` - 未选中状态（灰色）
-- `home-active.png` - 选中状态（蓝色 #2563eb）
+- `home.png` - 首页未选中状态
+- `home-active.png` - 首页选中状态
 
 ### 历史图标  
-- `history.png` - 未选中状态（灰色）
-- `history-active.png` - 选中状态（蓝色 #2563eb）
+- `history.png` - 历史未选中状态
+- `history-active.png` - 历史选中状态
 
-### 我的图标
-- `profile.png` - 未选中状态（灰色）
-- `profile-active.png` - 选中状态（蓝色 #2563eb）
+### 个人中心图标
+- `profile.png` - 个人中心未选中状态  
+- `profile-active.png` - 个人中心选中状态
 
-## 图标规格要求
+## 设计要求
 
-- **尺寸**: 81px × 81px
-- **格式**: PNG
-- **背景**: 透明
-- **颜色**: 
-  - 未选中: #7A7E83
-  - 选中: #2563eb
+- **尺寸**：建议 81x81 像素（@3x），54x54（@2x），27x27（@1x）
+- **格式**：PNG 格式，支持透明背景
+- **风格**：线性图标，简洁清晰
+- **颜色**：
+  - 未选中状态：#7A7E83（灰色）
+  - 选中状态：#0052d9（蓝色）
 
-## 临时解决方案
+## 图标建议
 
-目前app.json已配置为不使用自定义图标，系统会使用默认图标。
-如需自定义图标，请按照上述规格准备图标文件，然后更新app.json配置。
+可以从以下资源获取图标：
+- [IconFont](https://www.iconfont.cn/) - 阿里巴巴图标库
+- [Feather Icons](https://feathericons.com/) - 简洁线性图标
+- [Heroicons](https://heroicons.com/) - 现代图标库
 
-## 图标更新步骤
+## 临时方案
 
-1. 准备6个图标文件放入此目录
-2. 在app.json中添加iconPath和selectedIconPath配置
-3. 重新编译小程序 
+目前已移除图标路径，使用纯文本 tabBar。
+如需恢复图标，请添加相应文件后修改 `app.json` 中的 tabBar 配置。 

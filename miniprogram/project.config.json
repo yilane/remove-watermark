@@ -1,5 +1,5 @@
 {
-  "description": "IOPaint微信小程序端",
+  "description": "IOPaint AI图像修复小程序",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -7,7 +7,7 @@
   "setting": {
     "bundle": false,
     "userConfirmedBundleSwitch": false,
-    "urlCheck": true,
+    "urlCheck": false,
     "scopeDataCheck": false,
     "coverView": true,
     "es6": true,
@@ -21,7 +21,7 @@
     "uglifyFileName": false,
     "uploadWithSourceMap": true,
     "useIsolateContext": true,
-    "nodeModules": false,
+    "nodeModules": true,
     "enhance": true,
     "useMultiFrameRuntime": true,
     "useApiHook": true,
@@ -31,17 +31,16 @@
     "enableEngineNative": false,
     "packNpmRelationList": [],
     "minifyWXSS": true,
-    "showES6CompileOption": false,
-    "minifyWXML": true,
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    }
+    "disableUseStrict": false,
+    "minifyWXML": true
   },
   "compileType": "miniprogram",
   "libVersion": "2.19.4",
-  "appid": "wxYourAppIdHere",
+  "appid": "wx3dd0c73fae229842",
   "projectname": "IOPaint小程序",
-  "condition": {}
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
 }

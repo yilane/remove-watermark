@@ -94,6 +94,25 @@ def run(
     batch_inpaint(model, device, image, mask, output, config, concat)
 
 
+def load_env_file(env_file: str = "config.env"):
+    """加载环境变量文件"""
+    from pathlib import Path
+    env_path = Path(env_file)
+    if env_path.exists():
+        print(f"📝 加载环境变量文件: {env_path}")
+        import os
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    # 移除值中的行内注释
+                    if '#' in value:
+                        value = value.split('#')[0]
+                    os.environ[key.strip()] = value.strip()
+    else:
+        print(f"⚠️ 环境变量文件不存在: {env_path}")
+
 @typer_app.command(help="Start IOPaint server")
 @use_json_config()
 def start(
@@ -144,6 +163,9 @@ def start(
     enable_restoreformer: bool = Option(False),
     restoreformer_device: Device = Option(Device.cpu),
 ):
+    # 加载环境变量文件
+    load_env_file()
+    
     dump_environment_info()
     device = check_device(device)
     remove_bg_device = check_device(remove_bg_device)

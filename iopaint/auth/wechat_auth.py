@@ -43,7 +43,17 @@ class WeChatAuthClient:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, params=params) as response:
                     if response.status == 200:
-                        data = await response.json()
+                        # 先获取原始文本，然后尝试解析JSON
+                        text_response = await response.text()
+                        print(f"微信API响应: {text_response}")  # 调试信息
+                        
+                        try:
+                            data = json.loads(text_response)
+                        except json.JSONDecodeError:
+                            return {
+                                "error": "invalid_response",
+                                "error_description": f"微信API返回非JSON格式响应: {text_response[:200]}"
+                            }
                         
                         # 检查是否有错误
                         if "errcode" in data:
@@ -59,9 +69,10 @@ class WeChatAuthClient:
                             "unionid": data.get("unionid")
                         }
                     else:
+                        text_response = await response.text()
                         return {
                             "error": "http_error",
-                            "error_description": f"HTTP请求失败: {response.status}"
+                            "error_description": f"HTTP请求失败: {response.status}, 响应: {text_response[:200]}"
                         }
                         
         except Exception as e:

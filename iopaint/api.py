@@ -63,6 +63,10 @@ from iopaint.schema import (
     RealESRGANModel,
 )
 
+# 导入认证相关模块
+from iopaint.auth.routes import router as auth_router
+from iopaint.database.connection import create_tables, check_database_connection, init_default_configs
+
 CURRENT_DIR = Path(__file__).parent.absolute().resolve()
 WEB_APP_DIR = CURRENT_DIR / "web_app"
 
@@ -153,9 +157,19 @@ class Api:
         self.queue_lock = threading.Lock()
         api_middleware(self.app)
 
+        # 注册认证路由
+        self.app.include_router(auth_router)
+        
+        # 注册用户路由
+        from .auth.user_routes import router as user_router
+        self.app.include_router(user_router, prefix="/api/v1/user", tags=["用户"])
+
         self.file_manager = self._build_file_manager()
         self.plugins = self._build_plugins()
         self.model_manager = self._build_model_manager()
+
+        # 数据库初始化
+        self._init_database()
 
         # fmt: off
         self.add_api_route("/api/v1/gen-info", self.api_geninfo, methods=["POST"], response_model=GenInfoResponse)
@@ -409,3 +423,27 @@ class Api:
             cpu_offload=self.config.cpu_offload,
             callback=diffuser_callback,
         )
+
+    def _init_database(self):
+        """初始化数据库"""
+        try:
+            logger.info("🔄 正在初始化数据库...")
+            
+            # 检查数据库连接
+            if not check_database_connection():
+                logger.error("❌ 数据库连接失败")
+                return
+            
+            # 创建数据表
+            create_tables()
+            logger.info("✅ 数据库表创建成功")
+            
+            # 初始化默认配置
+            init_default_configs()
+            logger.info("✅ 系统配置初始化完成")
+            
+            logger.info("🎉 数据库初始化完成")
+            
+        except Exception as e:
+            logger.error(f"❌ 数据库初始化失败: {e}")
+            # 不抛出异常，允许应用继续运行

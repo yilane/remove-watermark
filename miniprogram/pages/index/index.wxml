@@ -1,71 +1,69 @@
 <!--pages/index/index.wxml-->
 <view class="container">
-  <!-- 顶部用户信息区域 -->
-  <view class="header">
-    <view class="user-info">
-      <view class="avatar-placeholder">
-        <text class="avatar-text">{{userInfo.nickName ? userInfo.nickName.charAt(0) : 'G'}}</text>
-      </view>
-      <view class="greeting">
-        <text class="welcome">您好, {{userInfo.nickName || 'Gemini'}}</text>
-        <text class="subtitle">开始您的创作吧！</text>
-      </view>
+  <!-- 主要横幅 -->
+  <view class="banner">
+    <view class="banner-icon">
+      <text class="icon">🪄</text>
     </view>
-    <view class="notification" bindtap="showNotifications">
-      <text class="bell-icon">🔔</text>
-      <view wx:if="{{hasUnreadNotifications}}" class="notification-badge"></view>
-    </view>
+    <text class="banner-title">AI图像修复</text>
+    <text class="banner-subtitle">轻松移除不需要的元素</text>
+    <t-button 
+      theme="primary" 
+      size="medium"
+      shape="round"
+      bind:tap="startEdit"
+      class="start-btn"
+    >
+      <text slot="icon">📤</text>
+      开始创作
+    </t-button>
   </view>
 
-  <!-- 主功能卡片 -->
-  <view class="main-card">
-    <view class="card-content">
-      <text class="card-title">AI智能修复</text>
-      <text class="card-description">轻松移除图片中不需要的任何物体</text>
-      <button class="start-btn" bindtap="startEditing">
-        <text class="btn-icon">✨</text>
-        开始修图
-      </button>
-    </view>
-  </view>
-
-  <!-- 最近记录 -->
-  <view class="recent-section">
-    <view class="section-header">
-      <text class="section-title">最近记录</text>
-      <text class="view-all" bindtap="viewAllHistory">查看全部</text>
-    </view>
-    
-    <view class="history-list" wx:if="{{recentHistory.length > 0}}">
+  <!-- 最近作品 -->
+  <view class="recent-works">
+    <text class="section-title">最近作品</text>
+    <view wx:if="{{recentWorks.length > 0}}" class="works-grid">
       <view 
-        class="history-item" 
-        wx:for="{{recentHistory}}" 
-        wx:key="id"
-        bindtap="viewHistoryDetail"
+        wx:for="{{recentWorks}}" 
+        wx:key="id" 
+        class="work-item"
+        bind:tap="viewWork"
         data-id="{{item.id}}"
       >
-        <image class="history-thumb" src="{{item.thumbnail}}" mode="aspectFill" />
-        <view class="history-info">
-          <text class="history-title">{{item.title}}</text>
-          <text class="history-time">{{item.createTime}}</text>
+        <t-image 
+          src="{{item.thumbnail}}" 
+          mode="aspectFill"
+          class="work-image"
+          loading
+        />
+        <view class="work-info">
+          <text class="work-title">{{item.title}}</text>
+          <text class="work-date">{{item.date}}</text>
         </view>
-        <button 
-          class="action-btn" 
-          size="mini" 
-          wx:if="{{item.status === 'success'}}"
-          bindtap="reEdit"
-          data-id="{{item.id}}"
-        >
-          重新编辑
-        </button>
       </view>
     </view>
-
+    
     <!-- 空状态 -->
-    <view class="empty-state" wx:else>
+    <view wx:else class="empty-state">
       <text class="empty-icon">📸</text>
-      <text class="empty-text">暂无修复记录</text>
-      <button class="start-first-btn" bindtap="startEditing">开始第一次修复</button>
+      <text class="empty-text">还没有作品</text>
+      <text class="empty-desc">开始您的第一次创作吧</text>
     </view>
   </view>
-</view> 
+
+  <!-- 功能介绍 -->
+  <view class="features">
+    <view class="feature-item">
+      <text class="feature-icon">🎯</text>
+      <text class="feature-text">智能识别</text>
+    </view>
+    <view class="feature-item">
+      <text class="feature-icon">⚡</text>
+      <text class="feature-text">快速修复</text>
+    </view>
+    <view class="feature-item">
+      <text class="feature-icon">🔥</text>
+      <text class="feature-text">高清输出</text>
+    </view>
+  </view>
+</view>

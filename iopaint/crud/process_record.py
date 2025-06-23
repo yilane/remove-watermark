@@ -172,6 +172,53 @@ class ProcessRecordCRUD:
         return db.query(ProcessRecord).filter(ProcessRecord.status == "pending")\
                  .order_by(ProcessRecord.created_at.asc())\
                  .limit(limit).all()
+    
+    def get_user_recent_records(self, db: Session, user_id: int, limit: int = 6) -> List[ProcessRecord]:
+        """获取用户最近的处理记录"""
+        return db.query(ProcessRecord).filter(ProcessRecord.user_id == user_id)\
+                 .order_by(ProcessRecord.created_at.desc())\
+                 .limit(limit).all()
+    
+    def get_user_record_count(self, db: Session, user_id: int, status: str = "") -> int:
+        """获取用户的处理记录总数"""
+        query = db.query(ProcessRecord).filter(ProcessRecord.user_id == user_id)
+        if status and status != "all":
+            query = query.filter(ProcessRecord.status == status)
+        return query.count()
+    
+    def get_user_today_count(self, db: Session, user_id: int) -> int:
+        """获取用户今日的处理记录数"""
+        today = datetime.utcnow().date()
+        return db.query(ProcessRecord).filter(
+            and_(
+                ProcessRecord.user_id == user_id,
+                func.date(ProcessRecord.created_at) == today
+            )
+        ).count()
+    
+    def get_user_records_paginated(self, db: Session, user_id: int, page: int = 1, limit: int = 20, status: str = "") -> List[ProcessRecord]:
+        """分页获取用户的处理记录"""
+        skip = (page - 1) * limit
+        query = db.query(ProcessRecord).filter(ProcessRecord.user_id == user_id)
+        if status and status != "all":
+            query = query.filter(ProcessRecord.status == status)
+        return query.order_by(ProcessRecord.created_at.desc())\
+                    .offset(skip).limit(limit).all()
+    
+    def get_user_record(self, db: Session, user_id: int, record_id: int) -> Optional[ProcessRecord]:
+        """获取用户的特定处理记录"""
+        return db.query(ProcessRecord).filter(
+            and_(ProcessRecord.user_id == user_id, ProcessRecord.id == record_id)
+        ).first()
+    
+    def delete_record(self, db: Session, record_id: int) -> bool:
+        """删除处理记录"""
+        record = self.get_by_id(db, record_id)
+        if record:
+            db.delete(record)
+            db.commit()
+            return True
+        return False
 
 # 全局处理记录CRUD实例
 process_record_crud = ProcessRecordCRUD() 

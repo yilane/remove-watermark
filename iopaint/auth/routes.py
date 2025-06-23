@@ -68,8 +68,9 @@ async def wechat_login(
                 "avatar_url": None
             }
             
-            # 如果提供了加密的用户信息，尝试解密
+            # 处理用户信息（优先使用加密数据，回退到raw_data）
             if all([login_data.encrypted_data, login_data.iv, session_result.get("session_key")]):
+                # 尝试解密用户信息
                 user_info = await wechat_client.get_user_info(
                     session_result["session_key"],
                     login_data.encrypted_data,
@@ -80,6 +81,17 @@ async def wechat_login(
                         "nickname": user_info.get("nickName"),
                         "avatar_url": user_info.get("avatarUrl")
                     })
+            elif login_data.raw_data:
+                # 处理原始数据
+                try:
+                    import json
+                    raw_user_info = json.loads(login_data.raw_data)
+                    user_data.update({
+                        "nickname": raw_user_info.get("nickName"),
+                        "avatar_url": raw_user_info.get("avatarUrl")
+                    })
+                except (json.JSONDecodeError, AttributeError):
+                    print(f"解析raw_data失败: {login_data.raw_data}")
             
             from ..schemas.auth import UserProfileCreate
             user = user_crud.create(db, UserProfileCreate(**user_data))
@@ -102,10 +114,13 @@ async def wechat_login(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         print(f"微信登录异常: {e}")
+        print(f"详细错误: {error_details}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "login_failed", "error_description": "登录失败，请重试"}
+            detail={"error": "login_failed", "error_description": f"登录失败: {str(e)}"}
         )
 
 @router.get("/profile", response_model=UserProfileResponse, summary="获取用户资料")
@@ -181,4 +196,6 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_active_user)
 ):
     """获取当前登录用户的详细信息"""
-    return UserProfileResponse.model_validate(current_user) 
+    return UserProfileResponse.model_validate(current_user)
+
+ 

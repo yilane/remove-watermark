@@ -1,7 +1,180 @@
 <!--pages/editor/editor.wxml-->
-<view class="container">
-  <view class="editor-placeholder">
-    <text>图像编辑器页面</text>
-    <text>（将在后续任务中实现）</text>
+<view class="editor-container">
+  <!-- 顶部导航 -->
+  <view class="editor-header">
+    <view class="header-left" bind:tap="goBack">
+      <text class="back-icon">←</text>
+      <text class="back-text">返回</text>
+    </view>
+    <text class="header-title">图像编辑</text>
+    <view class="header-right" bind:tap="saveWork">
+      <text class="save-icon">💾</text>
+      <text class="save-text">保存</text>
+    </view>
   </view>
+
+  <!-- 画布区域 -->
+  <view class="canvas-area">
+    <view class="canvas-container">
+      <!-- 原始图片 -->
+      <image 
+        wx:if="{{originalImage}}"
+        src="{{originalImage}}" 
+        mode="aspectFit"
+        class="original-image"
+        bind:load="onImageLoad"
+      />
+      
+      <!-- 绘制画布 -->
+      <canvas 
+        type="2d" 
+        id="drawCanvas"
+        class="draw-canvas"
+        bind:touchstart="onTouchStart"
+        bind:touchmove="onTouchMove"
+        bind:touchend="onTouchEnd"
+      />
+      
+      <!-- 蒙版预览 -->
+      <canvas 
+        type="2d" 
+        id="maskCanvas"
+        class="mask-canvas"
+        style="opacity: {{showMask ? 0.5 : 0}}"
+      />
+    </view>
+  </view>
+
+  <!-- 模型选择 -->
+  <view class="model-selection">
+    <view class="model-label">处理模型</view>
+    <view class="model-tabs">
+      <view 
+        class="model-tab {{selectedModel === 'fast' ? 'active' : ''}}"
+        bind:tap="selectModel"
+        data-model="fast"
+      >
+        快速
+      </view>
+      <view 
+        class="model-tab {{selectedModel === 'quality' ? 'active' : ''}}"
+        bind:tap="selectModel"
+        data-model="quality"
+      >
+        高质量
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部工具栏 -->
+  <view class="bottom-toolbar">
+    <!-- 绘制工具 -->
+    <view class="tools-section">
+      <view 
+        class="tool-item {{currentTool === 'brush' ? 'active' : ''}}"
+        bind:tap="selectTool"
+        data-tool="brush"
+      >
+        <text class="tool-icon">🖌️</text>
+        <text class="tool-text">画笔</text>
+      </view>
+      
+      <view 
+        class="tool-item {{currentTool === 'eraser' ? 'active' : ''}}"
+        bind:tap="selectTool"
+        data-tool="eraser"
+      >
+        <text class="tool-icon">🧽</text>
+        <text class="tool-text">橡皮擦</text>
+      </view>
+      
+      <view 
+        class="tool-item {{currentTool === 'smart' ? 'active' : ''}}"
+        bind:tap="selectTool"
+        data-tool="smart"
+      >
+        <text class="tool-icon">✨</text>
+        <text class="tool-text">智能</text>
+      </view>
+      
+      <view 
+        class="tool-item"
+        bind:tap="undoLastStroke"
+      >
+        <text class="tool-icon">↶</text>
+        <text class="tool-text">撤销</text>
+      </view>
+      
+      <view 
+        class="tool-item"
+        bind:tap="clearCanvas"
+      >
+        <text class="tool-icon">🗑️</text>
+        <text class="tool-text">清除</text>
+      </view>
+    </view>
+
+    <!-- 画笔大小控制 -->
+    <view class="brush-control">
+      <text class="brush-label">笔刷</text>
+      <slider 
+        min="1" 
+        max="50" 
+        value="{{brushSize}}"
+        bind:change="onBrushSizeChange"
+        activeColor="#0052d9"
+        backgroundColor="#e5e7eb"
+        class="brush-slider"
+      />
+      <view 
+        class="brush-preview"
+        style="width: {{brushSize * 2}}rpx; height: {{brushSize * 2}}rpx;"
+      ></view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <t-button 
+        size="medium"
+        theme="default"
+        bind:tap="previewResult"
+        class="preview-btn"
+      >
+        <text slot="icon">👁️</text>
+        预览
+      </t-button>
+      
+      <t-button 
+        size="medium"
+        theme="primary"
+        bind:tap="startProcessing"
+        loading="{{processing}}"
+        class="process-btn"
+      >
+        <text slot="icon">▶️</text>
+        {{processing ? '处理中' : '开始处理'}}
+      </t-button>
+    </view>
+  </view>
+
+  <!-- 处理进度弹窗 -->
+  <t-dialog
+    visible="{{showProgressDialog}}"
+    title="正在处理"
+    content=""
+    showCancelButton="{{false}}"
+    showConfirmButton="{{false}}"
+    closeOnEscKeydown="{{false}}"
+    closeOnOverlayClick="{{false}}"
+  >
+    <view slot="content" class="progress-content">
+      <t-progress 
+        percentage="{{processProgress}}" 
+        color="#0052d9"
+        stroke-width="8"
+        show-info
+      />
+      <text class="progress-text">{{processStatus}}</text>
+    </view>
+  </t-dialog>
 </view>

@@ -1,55 +1,155 @@
 <!--pages/history/history.wxml-->
-<view class="container">
-  <!-- 筛选器 -->
-  <view class="filter-bar">
-          <picker bindchange="onStatusChange" value="{{statusIndex}}" range="{{statusOptions}}">
-        <view class="filter-item">
-          <text>{{statusOptions[statusIndex]}}</text>
-          <text class="arrow-icon">▼</text>
-        </view>
-      </picker>
-      <picker mode="date" bindchange="onDateChange" value="{{selectedDate}}">
-        <view class="filter-item">
-          <text>{{selectedDate || '选择日期'}}</text>
-          <text class="arrow-icon">▼</text>
-        </view>
-      </picker>
+<view class="history-container">
+  <!-- 筛选标签 -->
+  <view class="filter-tabs">
+    <t-tabs value="{{activeTab}}" bind:change="onTabChange" space-evenly>
+      <t-tab-panel value="all" label="全部" />
+      <t-tab-panel value="completed" label="成功" />
+      <t-tab-panel value="failed" label="失败" />
+    </t-tabs>
   </view>
 
   <!-- 历史记录列表 -->
-  <view class="history-list" wx:if="{{historyList.length > 0}}">
-    <view 
-      class="history-item" 
-      wx:for="{{historyList}}" 
-      wx:key="id"
-      bindtap="viewDetail"
-      data-id="{{item.id}}"
-    >
-      <image class="thumbnail" src="{{item.thumbnail}}" mode="aspectFill" />
-      <view class="item-info">
-        <text class="title">{{item.title}}</text>
-        <text class="time">{{item.createTime}}</text>
-        <view class="tags">
-          <text class="tag mode-tag">{{item.mode}}</text>
-          <view class="status-badge status-{{item.status}}">
-            {{item.statusText}}
+  <scroll-view 
+    class="history-list"
+    scroll-y
+    enable-back-to-top
+    refresher-enabled
+    refresher-triggered="{{loading}}"
+    bind:refresherrefresh="onPullDownRefresh"
+    bind:scrolltolower="onReachBottom"
+  >
+    <view wx:if="{{historyList.length > 0}}" class="list-content">
+      <view 
+        wx:for="{{historyList}}" 
+        wx:key="id" 
+        class="history-item"
+        bind:tap="viewDetail"
+        data-id="{{item.id}}"
+      >
+        <!-- 缩略图 -->
+        <view class="thumbnail-container">
+          <t-image 
+            src="{{item.thumbnail}}" 
+            mode="aspectFill"
+            class="thumbnail"
+            loading
+          />
+          <view wx:if="{{item.status === 'processing'}}" class="processing-overlay">
+            <t-loading size="40rpx" />
+          </view>
+        </view>
+
+        <!-- 内容信息 -->
+        <view class="content-info">
+          <view class="item-header">
+            <text class="item-title">{{item.title}}</text>
+            <view class="status-badge status-{{item.status}}">
+              <text wx:if="{{item.status === 'success'}}" class="status-icon">✓</text>
+              <text wx:elif="{{item.status === 'failed'}}" class="status-icon">✗</text>
+              <text wx:else class="status-icon">⏳</text>
+              <text class="status-text">{{item.statusText}}</text>
+            </view>
+          </view>
+
+          <view class="item-meta">
+            <text class="meta-item">
+              <text class="meta-icon">🕒</text>
+              {{item.createTime}}
+            </text>
+            <text class="meta-item" wx:if="{{item.processTime}}">
+              <text class="meta-icon">⚡</text>
+              {{item.processTime}}秒
+            </text>
+          </view>
+
+          <!-- 处理进度 -->
+          <view wx:if="{{item.status === 'processing'}}" class="progress-section">
+            <view class="progress-bar">
+              <view class="progress-track">
+                <view 
+                  class="progress-fill" 
+                  style="width: {{item.progress}}%"
+                ></view>
+              </view>
+              <text class="progress-text">{{item.progress}}%</text>
+            </view>
+          </view>
+
+          <!-- 错误信息 -->
+          <view wx:if="{{item.status === 'failed' && item.errorMessage}}" class="error-message">
+            <text class="error-text">{{item.errorMessage}}</text>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view class="item-actions">
+            <t-button 
+              wx:if="{{item.status === 'success'}}"
+              size="small" 
+              theme="light"
+              bind:tap="viewResult"
+              data-id="{{item.id}}"
+              class="action-btn"
+            >
+              查看结果
+            </t-button>
+            
+            <t-button 
+              wx:if="{{item.status === 'failed'}}"
+              size="small" 
+              theme="primary"
+              bind:tap="reprocess"
+              data-id="{{item.id}}"
+              class="action-btn"
+            >
+              重新处理
+            </t-button>
+
+            <t-button 
+              size="small" 
+              theme="light"
+              bind:tap="deleteItem"
+              data-id="{{item.id}}"
+              class="action-btn delete-btn"
+            >
+              删除
+            </t-button>
           </view>
         </view>
       </view>
-      <view class="item-actions">
-        <text 
-          class="action-icon" 
-          bindtap="deleteItem"
-          data-id="{{item.id}}"
-        >🗑️</text>
-      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-title">暂无历史记录</text>
+      <text class="empty-desc">开始您的第一次图像修复吧</text>
+      <t-button 
+        theme="primary" 
+        size="medium"
+        bind:tap="goToEditor"
+        class="empty-action"
+      >
+        开始创作
+      </t-button>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore && historyList.length > 0}}" class="load-more">
+      <t-loading size="32rpx" />
+      <text class="load-text">加载更多...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view wx:elif="{{!hasMore && historyList.length > 0}}" class="no-more">
+      <text>没有更多数据了</text>
+    </view>
+  </scroll-view>
+
+  <!-- 悬浮操作按钮 -->
+  <view class="fab-container">
+    <view class="fab" bind:tap="goToEditor">
+      <text class="fab-icon">+</text>
     </view>
   </view>
-
-      <!-- 空状态 -->
-    <view class="empty-state" wx:else>
-      <text class="empty-icon">📋</text>
-      <text class="empty-text">暂无历史记录</text>
-      <button class="start-btn" bindtap="startNew">开始第一次修复</button>
-    </view>
 </view>

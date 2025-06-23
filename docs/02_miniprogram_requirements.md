@@ -1,4 +1,4 @@
-# IOPaint小程序端需求文档
+# AI图像修复工具小程序端需求文档
 
 ## 1. 项目概述
 
@@ -7,15 +7,16 @@
 
 ### 1.2 项目目标
 - 提供完整的图像修复功能，包括图像上传、蒙版绘制、AI修复等
+- 操作流程 首页 → 直接选择图片 → 一键处理 → 自动跳传
 - 实现用户认证和会话管理
 - 优化移动端用户体验
 - 保持与现有后端API的兼容性
 
 ### 1.3 技术架构
-- **前端**：微信小程序（使用原生小程序框架或uni-app）
+- **前端**：微信小程序原生框架 + TDesign MiniProgram UI组件库
 - **后端**：复用现有FastAPI服务，增加用户认证中间件
 - **通信**：HTTP RESTful API + WebSocket（用于进度推送）
-- **数据库**：SQLite/PostgreSQL（新增用户管理）
+- **数据库**：MySQL（新增用户管理）
 
 ## 2. 功能需求
 
@@ -145,35 +146,45 @@
 ### 3.1 小程序端技术栈
 
 #### 3.1.1 开发框架选择
-- **推荐方案**：uni-app
+- **选定方案**：原生微信小程序开发
 - **优势**：
-  - 一套代码多端运行（微信、支付宝、抖音小程序）
-  - Vue.js语法，开发效率高
-  - 丰富的组件库和插件生态
-- **备选方案**：原生微信小程序开发
+  - 性能最优，直接调用微信小程序原生API
+  - 完整支持微信小程序所有特性和功能
+  - 官方支持，稳定性和兼容性最佳
+  - 开发工具完善，调试方便
 
 #### 3.1.2 UI框架
-- **推荐**：uni-ui 或 uView UI
+- **选定**：TDesign MiniProgram UI组件库
+- **优势**：
+  - 腾讯官方设计语言，兼容性和稳定性最佳
+  - 组件丰富，提供50+高质量组件
+  - 设计现代，符合TDesign设计规范
+  - TypeScript支持，开发体验优秀
+  - 按需加载，轻量级，性能优秀
 - **要求**：
   - 支持深色模式
   - 组件丰富，样式现代
   - 性能优良，体积小
 
 #### 3.1.3 状态管理
-- **推荐**：Vuex 或 Pinia
+- **方案**：原生小程序全局状态管理
+- **实现方式**：
+  - 使用getApp()获取全局应用实例进行状态管理
+  - 结合wx.setStorageSync/wx.getStorageSync进行数据持久化
+  - 使用自定义事件机制进行组件间通信
 - **管理内容**：
   - 用户认证状态
   - 图像处理状态
   - 应用配置信息
 
 #### 3.1.4 网络请求
-- **HTTP客户端**：基于uni.request封装
+- **HTTP客户端**：基于wx.request封装
 - **功能要求**：
   - 请求/响应拦截器
   - 自动Token附加
   - 错误统一处理
   - 请求重试机制
-- **WebSocket**：uni.connectSocket
+- **WebSocket**：wx.connectSocket
   - 自动重连机制
   - 心跳检测
 
@@ -191,27 +202,27 @@
 ```sql
 -- 用户表（简化版）
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     openid VARCHAR(255) UNIQUE NOT NULL,     -- 微信OpenID
     nickname VARCHAR(100),                   -- 微信昵称
     avatar_url VARCHAR(255),                 -- 微信头像
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 处理记录表
 CREATE TABLE process_records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     original_image_url VARCHAR(255),
     result_image_url VARCHAR(255),
     mask_data TEXT,
     model_name VARCHAR(50),
     status VARCHAR(20), -- pending, processing, completed, failed
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
+    completed_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
 #### 3.2.3 新增API端点
@@ -357,7 +368,7 @@ GET  /api/v1/download/image/{id}     # 图像下载（权限验证）
 - **推荐配置**：4核CPU，8GB内存，100GB SSD
 - **操作系统**：Ubuntu 20.04 LTS或CentOS 8
 - **Python版本**：Python 3.8+
-- **数据库**：PostgreSQL 12+（生产环境）
+- **数据库**：MySQL 8.0+（生产环境）
 
 #### 6.1.2 容器化部署
 - **Docker镜像**：更新现有Dockerfile支持认证功能
@@ -382,7 +393,7 @@ GET  /api/v1/download/image/{id}     # 图像下载（权限验证）
 ### 6.3 备份和恢复
 
 #### 6.3.1 数据备份
-- **数据库备份**：定期备份用户数据和处理记录
+- **数据库备份**：使用mysqldump定期备份用户数据和处理记录
 - **文件备份**：备份用户上传的图像文件
 - **配置备份**：备份应用配置和证书文件
 - **备份频率**：每日增量备份，每周全量备份
