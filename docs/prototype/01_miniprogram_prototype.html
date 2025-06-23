@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOPaint 小程序原型</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* 设备框架 */
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 25px;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 页面容器 */
+        .page {
+            display: none;
+            height: calc(100% - 44px);
+            flex-direction: column;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* 头部导航 */
+        .header {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: #1890ff;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* 主内容区 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 底部导航 */
+        .tab-bar {
+            height: 60px;
+            background: #fff;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+        }
+
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .tab-item.active {
+            color: #1890ff;
+        }
+
+        .tab-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            background-size: contain;
+        }
+
+        .tab-label {
+            font-size: 12px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* 首页样式 */
+        .hero-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            margin: -16px -16px 16px -16px;
+        }
+
+        .hero-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            background: #1890ff;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .action-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 图像编辑页面样式 */
+        .image-editor {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .toolbar {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 16px;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tool-btn.active {
+            border-color: #1890ff;
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: #f5f5f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            cursor: crosshair;
+        }
+
+        .bottom-actions {
+            height: 80px;
+            background: white;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 16px;
+        }
+
+        /* 进度页面样式 */
+        .progress-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .progress-icon {
+            width: 80px;
+            height: 80px;
+            background: #1890ff;
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e8e8e8;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            width: 65%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .progress-detail {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        /* 结果页面样式 */
+        .result-header {
+            text-align: center;
+            padding: 24px;
+            background: white;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #52c41a;
+            margin-bottom: 8px;
+        }
+
+        .result-subtitle {
+            color: #666;
+        }
+
+        .image-compare {
+            background: white;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .compare-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .compare-image {
+            flex: 1;
+            background: #f5f5f5;
+            border-radius: 8px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .compare-labels {
+            display: flex;
+            text-align: center;
+        }
+
+        .compare-label {
+            flex: 1;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .result-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* 个人中心样式 */
+        .profile-header {
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            padding: 24px 16px;
+            text-align: center;
+            margin: -16px -16px 16px -16px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .menu-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: #f5f5f5;
+        }
+
+        .menu-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            color: #1890ff;
+        }
+
+        .menu-text {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .menu-arrow {
+            color: #ccc;
+        }
+
+        /* 历史记录样式 */
+        .history-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .history-image {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .history-model {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .history-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #f6ffed;
+            color: #52c41a;
+            display: inline-block;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .phone-frame {
+                width: 100%;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                padding: 0;
+            }
+            
+            .screen {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>IOPaint</span>
+                <span>100%</span>
+            </div>
+
+            <!-- 首页 -->
+            <div class="page active" id="home-page">
+                <div class="content">
+                    <div class="hero-section">
+                        <div class="hero-title">AI 图像修复</div>
+                        <div class="hero-subtitle">轻松去除图片中的水印和不需要的物体</div>
+                        <button class="btn btn-primary" onclick="showPage('upload-page')">
+                            开始修复 →
+                        </button>
+                    </div>
+
+                    <div class="quick-actions">
+                        <div class="action-card" onclick="showPage('upload-page')">
+                            <div class="action-icon">📷</div>
+                            <div class="action-title">快速修复</div>
+                            <div class="action-desc">上传图片开始处理</div>
+                        </div>
+                        <div class="action-card" onclick="showPage('history-page')">
+                            <div class="action-icon">🕒</div>
+                            <div class="action-title">历史记录</div>
+                            <div class="action-desc">查看处理历史</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px;">最近处理</h3>
+                        <div class="history-item" style="margin: 0;">
+                            <div class="history-image">🖼️</div>
+                            <div class="history-info">
+                                <div class="history-date">2024-01-20 14:30</div>
+                                <div class="history-model">快速模式 - LAMA</div>
+                                <span class="history-status">已完成</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px;">功能介绍</h3>
+                        <ul style="list-style: none; color: #666; line-height: 1.6;">
+                            <li>• 智能识别并去除水印</li>
+                            <li>• 移除不需要的物体或人物</li>
+                            <li>• 修复老照片划痕</li>
+                            <li>• 支持多种AI模型选择</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item active" onclick="showPage('home-page')">
+                        <div class="tab-icon">🏠</div>
+                        <div class="tab-label">首页</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('upload-page')">
+                        <div class="tab-icon">📷</div>
+                        <div class="tab-label">修复</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('history-page')">
+                        <div class="tab-icon">🕒</div>
+                        <div class="tab-label">历史</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('profile-page')">
+                        <div class="tab-icon">👤</div>
+                        <div class="tab-label">我的</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 上传页面 -->
+            <div class="page" id="upload-page">
+                <div class="header">
+                    <button class="header-btn" onclick="showPage('home-page')">← 返回</button>
+                    <div class="header-title">上传图片</div>
+                    <div></div>
+                </div>
+                
+                <div class="content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px;">选择图片</h3>
+                        <div style="text-align: center; padding: 40px; border: 2px dashed #e8e8e8; border-radius: 8px; cursor: pointer;" onclick="showPage('edit-page')">
+                            <div style="font-size: 48px; margin-bottom: 16px; color: #ccc;">📁</div>
+                            <p style="color: #666; margin-bottom: 16px;">点击选择图片或拖拽到此处</p>
+                            <div class="btn btn-primary">选择图片</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="margin-bottom: 12px;">支持格式</h4>
+                        <p style="color: #666; font-size: 14px; line-height: 1.5;">
+                            JPG、PNG、WEBP<br>
+                            文件大小：最大10MB<br>
+                            分辨率：建议不超过4096x4096
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="margin-bottom: 12px;">处理模式</h4>
+                        <div style="display: flex; gap: 12px;">
+                            <div class="btn btn-primary" style="flex: 1;">快速模式</div>
+                            <div class="btn btn-secondary" style="flex: 1;">高质量模式</div>
+                        </div>
+                        <p style="color: #666; font-size: 12px; margin-top: 8px;">
+                            快速模式：处理时间短，适合简单场景<br>
+                            高质量模式：处理效果更好，耗时较长
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编辑页面 -->
+            <div class="page" id="edit-page">
+                <div class="header">
+                    <button class="header-btn" onclick="showPage('upload-page')">← 返回</button>
+                    <div class="header-title">编辑蒙版</div>
+                    <button class="header-btn" onclick="showPage('progress-page')">开始</button>
+                </div>
+
+                <div class="image-editor">
+                    <div class="toolbar">
+                        <div class="tool-btn active">✏️</div>
+                        <div class="tool-btn">🧽</div>
+                        <div class="tool-btn">🗑️</div>
+                        <div class="tool-btn">🔍</div>
+                        <div style="flex: 1;"></div>
+                        <select style="border: 1px solid #e8e8e8; border-radius: 4px; padding: 4px;">
+                            <option>小画笔</option>
+                            <option>中画笔</option>
+                            <option>大画笔</option>
+                        </select>
+                    </div>
+
+                    <div class="canvas-container">
+                        <div class="canvas" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 200\"><rect width=\"300\" height=\"200\" fill=\"%23f0f0f0\"/><text x=\"150\" y=\"100\" text-anchor=\"middle\" font-family=\"Arial\" font-size=\"16\" fill=\"%23666\">示例图片区域</text><text x=\"150\" y=\"120\" text-anchor=\"middle\" font-family=\"Arial\" font-size=\"12\" fill=\"%23999\">在此区域绘制需要修复的部分</text></svg>'); background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
+                    </div>
+
+                    <div class="bottom-actions">
+                        <button class="btn btn-secondary">重置</button>
+                        <button class="btn btn-secondary">撤销</button>
+                        <button class="btn btn-primary" onclick="showPage('progress-page')">开始修复</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 处理进度页面 -->
+            <div class="page" id="progress-page">
+                <div class="header">
+                    <button class="header-btn" onclick="showPage('edit-page')">← 返回</button>
+                    <div class="header-title">处理中</div>
+                    <button class="header-btn" style="color: #ff4d4f;">取消</button>
+                </div>
+
+                <div class="content">
+                    <div class="progress-container">
+                        <div class="progress-icon">⚡</div>
+                        <div class="progress-text">AI正在处理您的图片</div>
+                        <div class="progress-detail">预计还需要 15 秒</div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        
+                        <div style="color: #666; margin-bottom: 32px;">65% 完成</div>
+                        
+                        <div class="card" style="text-align: left;">
+                            <h4 style="margin-bottom: 12px;">处理步骤</h4>
+                            <div style="font-size: 14px; line-height: 1.6; color: #666;">
+                                <div style="color: #52c41a;">✓ 图像预处理</div>
+                                <div style="color: #52c41a;">✓ 蒙版分析</div>
+                                <div style="color: #1890ff;">⟳ AI模型推理</div>
+                                <div style="color: #ccc;">○ 后处理优化</div>
+                                <div style="color: #ccc;">○ 结果生成</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-secondary" style="margin-top: 24px;" onclick="showPage('result-page')">
+                            模拟完成
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结果页面 -->
+            <div class="page" id="result-page">
+                <div class="result-header">
+                    <div class="result-title">✨ 修复完成</div>
+                    <div class="result-subtitle">处理耗时 23 秒</div>
+                </div>
+
+                <div class="content">
+                    <div class="image-compare">
+                        <div class="compare-container">
+                            <div class="compare-image">原图</div>
+                            <div class="compare-image" style="background: #e6f7ff; color: #1890ff;">修复后</div>
+                        </div>
+                        <div class="compare-labels">
+                            <div class="compare-label">修复前</div>
+                            <div class="compare-label">修复后</div>
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="btn btn-primary">保存到相册</button>
+                        <button class="btn btn-secondary">分享结果</button>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="margin-bottom: 12px;">处理详情</h4>
+                        <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                            <div>使用模型：LAMA (快速模式)</div>
+                            <div>处理时间：23 秒</div>
+                            <div>原图尺寸：1920 x 1080</div>
+                            <div>修复区域：12.5% 的图像面积</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="showPage('edit-page')">重新编辑</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="showPage('home-page')">完成</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 历史记录页面 -->
+            <div class="page" id="history-page">
+                <div class="header">
+                    <div></div>
+                    <div class="header-title">历史记录</div>
+                    <button class="header-btn">清空</button>
+                </div>
+
+                <div class="content">
+                    <div class="history-item">
+                        <div class="history-image">🖼️</div>
+                        <div class="history-info">
+                            <div class="history-date">2024-01-20 14:30</div>
+                            <div class="history-model">快速模式 - LAMA</div>
+                            <span class="history-status">已完成</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-image">🖼️</div>
+                        <div class="history-info">
+                            <div class="history-date">2024-01-20 10:15</div>
+                            <div class="history-model">高质量模式 - MAT</div>
+                            <span class="history-status">已完成</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-image">🖼️</div>
+                        <div class="history-info">
+                            <div class="history-date">2024-01-19 16:45</div>
+                            <div class="history-model">快速模式 - LAMA</div>
+                            <span class="history-status">已完成</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-image">🖼️</div>
+                        <div class="history-info">
+                            <div class="history-date">2024-01-19 09:20</div>
+                            <div class="history-model">高质量模式 - MAT</div>
+                            <span class="history-status" style="background: #fff2e8; color: #fa8c16;">处理失败</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; padding: 40px; color: #ccc;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                        <p>已显示全部记录</p>
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item" onclick="showPage('home-page')">
+                        <div class="tab-icon">🏠</div>
+                        <div class="tab-label">首页</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('upload-page')">
+                        <div class="tab-icon">📷</div>
+                        <div class="tab-label">修复</div>
+                    </div>
+                    <div class="tab-item active" onclick="showPage('history-page')">
+                        <div class="tab-icon">🕒</div>
+                        <div class="tab-label">历史</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('profile-page')">
+                        <div class="tab-icon">👤</div>
+                        <div class="tab-label">我的</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个人中心页面 -->
+            <div class="page" id="profile-page">
+                <div class="content">
+                    <div class="profile-header">
+                        <div class="avatar">👤</div>
+                        <div class="profile-name">微信用户</div>
+                        <div>已登录 · 上次使用：今天</div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">23</div>
+                                <div class="stat-label">处理次数</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">15</div>
+                                <div class="stat-label">使用天数</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">2.1MB</div>
+                                <div class="stat-label">已节省空间</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-list">
+                        <div class="menu-item" onclick="showPage('settings-page')">
+                            <div class="menu-icon">⚙️</div>
+                            <div class="menu-text">设置</div>
+                            <div class="menu-arrow">›</div>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">💰</div>
+                            <div class="menu-text">会员中心</div>
+                            <div class="menu-arrow">›</div>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">❓</div>
+                            <div class="menu-text">帮助与反馈</div>
+                            <div class="menu-arrow">›</div>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">📄</div>
+                            <div class="menu-text">隐私政策</div>
+                            <div class="menu-arrow">›</div>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">ℹ️</div>
+                            <div class="menu-text">关于我们</div>
+                            <div class="menu-arrow">›</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button class="btn btn-secondary" style="width: 100%;">退出登录</button>
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item" onclick="showPage('home-page')">
+                        <div class="tab-icon">🏠</div>
+                        <div class="tab-label">首页</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('upload-page')">
+                        <div class="tab-icon">📷</div>
+                        <div class="tab-label">修复</div>
+                    </div>
+                    <div class="tab-item" onclick="showPage('history-page')">
+                        <div class="tab-icon">🕒</div>
+                        <div class="tab-label">历史</div>
+                    </div>
+                    <div class="tab-item active" onclick="showPage('profile-page')">
+                        <div class="tab-icon">👤</div>
+                        <div class="tab-label">我的</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置页面 -->
+            <div class="page" id="settings-page">
+                <div class="header">
+                    <button class="header-btn" onclick="showPage('profile-page')">← 返回</button>
+                    <div class="header-title">设置</div>
+                    <div></div>
+                </div>
+
+                <div class="content">
+                    <div class="menu-list">
+                        <div class="menu-item">
+                            <div class="menu-icon">🖼️</div>
+                            <div class="menu-text">默认图像质量</div>
+                            <select style="border: 1px solid #e8e8e8; border-radius: 4px; padding: 4px;">
+                                <option>高质量</option>
+                                <option>标准</option>
+                                <option>节省流量</option>
+                            </select>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">💾</div>
+                            <div class="menu-text">自动保存到相册</div>
+                            <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1890ff; border-radius: 24px; transition: .4s;"></span>
+                            </label>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">🔔</div>
+                            <div class="menu-text">处理完成通知</div>
+                            <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1890ff; border-radius: 24px; transition: .4s;"></span>
+                            </label>
+                        </div>
+                        <div class="menu-item">
+                            <div class="menu-icon">🌙</div>
+                            <div class="menu-text">深色模式</div>
+                            <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 24px; transition: .4s;"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 24px;">
+                        <h4 style="margin-bottom: 12px;">缓存管理</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="color: #666;">缓存大小</span>
+                            <span>45.2 MB</span>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%;">清理缓存</button>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="margin-bottom: 12px;">版本信息</h4>
+                        <div style="color: #666; font-size: 14px; line-height: 1.6;">
+                            <div>当前版本：v1.0.0</div>
+                            <div>最后更新：2024-01-20</div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 12px;">检查更新</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面切换功能
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示指定页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 更新导航状态
+            updateTabBar(pageId);
+        }
+        
+        // 更新底部导航状态
+        function updateTabBar(pageId) {
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 根据页面ID设置对应的导航项为活跃状态
+            const tabMapping = {
+                'home-page': 0,
+                'upload-page': 1,
+                'edit-page': 1,
+                'progress-page': 1,
+                'result-page': 1,
+                'history-page': 2,
+                'profile-page': 3,
+                'settings-page': 3
+            };
+            
+            const tabBars = document.querySelectorAll('.tab-bar');
+            tabBars.forEach(tabBar => {
+                const tabs = tabBar.querySelectorAll('.tab-item');
+                const activeIndex = tabMapping[pageId];
+                if (tabs[activeIndex]) {
+                    tabs[activeIndex].classList.add('active');
+                }
+            });
+        }
+        
+        // 模拟进度更新
+        let progressInterval;
+        
+        function startProgress() {
+            let progress = 0;
+            progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    setTimeout(() => {
+                        showPage('result-page');
+                    }, 1000);
+                }
+                
+                const progressFill = document.querySelector('.progress-fill');
+                const progressText = document.querySelector('.progress-detail');
+                if (progressFill) {
+                    progressFill.style.width = progress + '%';
+                }
+                if (progressText) {
+                    const remainingTime = Math.max(0, Math.round((100 - progress) / 5));
+                    progressText.textContent = `预计还需要 ${remainingTime} 秒`;
+                }
+            }, 1000);
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 工具栏切换
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // 模拟画布绘制
+            const canvas = document.querySelector('.canvas');
+            if (canvas) {
+                let isDrawing = false;
+                
+                canvas.addEventListener('mousedown', () => {
+                    isDrawing = true;
+                });
+                
+                canvas.addEventListener('mousemove', (e) => {
+                    if (isDrawing) {
+                        // 这里可以添加实际的绘制逻辑
+                        console.log('Drawing at:', e.offsetX, e.offsetY);
+                    }
+                });
+                
+                canvas.addEventListener('mouseup', () => {
+                    isDrawing = false;
+                });
+            }
+        });
+        
+        // 添加一些交互动画
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
+            }
+        });
+    </script>
+</body>
+</html> 

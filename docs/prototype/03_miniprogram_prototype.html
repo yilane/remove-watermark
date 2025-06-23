@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOPaint 小程序原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 模拟微信小程序样式 */
+        .miniprogram-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background-color: #f7f7f7;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .page {
+            display: none;
+            flex-grow: 1;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .page.active {
+            display: flex;
+        }
+        .bottom-nav {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .bottom-nav-item.active svg {
+            color: #2563eb; /* 科技蓝 */
+        }
+        .bottom-nav-item.active p {
+            color: #2563eb; /* 科技蓝 */
+        }
+        /* 画布工具栏样式 */
+        .tool-icon {
+            transition: all 0.2s ease-in-out;
+        }
+        .tool-icon.selected {
+            background-color: #dbeafe; /* 蓝色-100 */
+            color: #2563eb; /* 蓝色-600 */
+            transform: scale(1.1);
+        }
+        /* 自定义滑块样式 */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        /* 结果对比滑块 */
+        .comparison-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.7);
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            position: absolute;
+            bottom: -15px;
+            cursor: ew-resize;
+        }
+        .comparison-slider:hover {
+            opacity: 1;
+        }
+        .comparison-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            background-color: transparent;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l-5-5 5-5"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center h-screen">
+
+    <div class="miniprogram-container">
+        <!-- 页面容器 -->
+        <main class="flex-grow overflow-hidden relative">
+            <!-- 登录页 -->
+            <div id="page-login" class="page active flex-col justify-center items-center bg-white p-8 text-center">
+                <i data-lucide="image-plus" class="w-24 h-24 text-blue-600 mb-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">IOPaint</h1>
+                <p class="text-gray-500 mb-12">您的随身AI图像修复专家</p>
+                <button onclick="login()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition">
+                    <i data-lucide="wechat" class="w-6 h-6 mr-2"></i>
+                    微信一键登录
+                </button>
+                <div class="text-xs text-gray-400 mt-8">
+                    登录即代表您已阅读并同意
+                    <a href="#" class="text-blue-500">《用户协议》</a> 与 
+                    <a href="#" class="text-blue-500">《隐私政策》</a>
+                </div>
+            </div>
+
+            <!-- 主页 (首页, 历史, 我的) -->
+            <div id="page-main" class="page flex-col">
+                <div id="main-content" class="flex-grow bg-gray-100 overflow-y-auto">
+                    <!-- 首页内容 -->
+                    <div id="tab-home" class="tab-content active p-4">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center">
+                                <img src="https://placehold.co/40x40/6366f1/ffffff?text=U" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
+                                <div>
+                                    <p class="font-semibold text-gray-800">您好, Gemini</p>
+                                    <p class="text-xs text-gray-500">开始您的创作吧！</p>
+                                </div>
+                            </div>
+                             <i data-lucide="bell" class="w-6 h-6 text-gray-500"></i>
+                        </div>
+                        
+                        <div class="bg-white rounded-2xl p-6 text-center shadow-sm mb-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-2">AI智能修复</h2>
+                            <p class="text-gray-500 mb-6">轻松移除图片中不需要的任何物体</p>
+                            <button onclick="navigateTo('page-edit')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition shadow-lg shadow-blue-500/20">
+                                <i data-lucide="wand-2" class="w-5 h-5 mr-2"></i>
+                                开始修图
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-800">最近记录</h3>
+                            <a href="#" onclick="switchTab('history')" class="text-sm text-blue-600 font-semibold">查看全部</a>
+                        </div>
+                        
+                        <!-- 历史记录项 -->
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl p-3 flex items-center shadow-sm">
+                                <img src="https://placehold.co/100x100/a5b4fc/ffffff?text=景" alt="历史记录缩略图" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-gray-700">风景照修复</p>
+                                    <p class="text-xs text-gray-400">2025-06-22 15:30</p>
+                                </div>
+                                <button onclick="navigateTo('page-edit')" class="text-sm bg-blue-100 text-blue-600 font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">重新编辑</button>
+                            </div>
+                             <div class="bg-white rounded-xl p-3 flex items-center shadow-sm">
+                                <img src="https://placehold.co/100x100/fca5a5/ffffff?text=人" alt="历史记录缩略图" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-gray-700">人像照片处理</p>
+                                    <p class="text-xs text-gray-400">2025-06-21 10:18</p>
+                                </div>
+                                <button onclick="navigateTo('page-result')" class="text-sm bg-gray-100 text-gray-600 font-semibold px-3 py-1.5 rounded-md hover:bg-gray-200">查看结果</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 历史记录内容 -->
+                    <div id="tab-history" class="tab-content hidden p-4">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">全部历史记录</h2>
+                         <div class="space-y-3">
+                            <div class="bg-white rounded-xl p-3 flex items-center shadow-sm">
+                                <img src="https://placehold.co/100x100/a5b4fc/ffffff?text=景" alt="历史记录缩略图" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-gray-700">风景照修复</p>
+                                    <p class="text-xs text-gray-400">2025-06-22 15:30 - 高质量模式</p>
+                                    <p class="text-xs text-green-500 font-semibold">处理成功</p>
+                                </div>
+                                <i data-lucide="trash-2" class="w-5 h-5 text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                            </div>
+                             <div class="bg-white rounded-xl p-3 flex items-center shadow-sm">
+                                <img src="https://placehold.co/100x100/fca5a5/ffffff?text=人" alt="历史记录缩略图" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-gray-700">人像照片处理</p>
+                                    <p class="text-xs text-gray-400">2025-06-21 10:18 - 快速模式</p>
+                                    <p class="text-xs text-green-500 font-semibold">处理成功</p>
+                                </div>
+                               <i data-lucide="trash-2" class="w-5 h-5 text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                            </div>
+                             <div class="bg-white rounded-xl p-3 flex items-center shadow-sm">
+                                <img src="https://placehold.co/100x100/fdba74/ffffff?text=物" alt="历史记录缩略图" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-gray-700">物品移除</p>
+                                    <p class="text-xs text-gray-400">2025-06-20 18:05 - 高质量模式</p>
+                                    <p class="text-xs text-red-500 font-semibold">处理失败</p>
+                                </div>
+                                <i data-lucide="trash-2" class="w-5 h-5 text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 我的内容 -->
+                    <div id="tab-me" class="tab-content hidden">
+                        <div class="p-6 bg-blue-600 text-white">
+                            <div class="flex items-center">
+                                <img src="https://placehold.co/64x64/ffffff/6366f1?text=G" alt="用户头像" class="w-16 h-16 rounded-full mr-4 border-2 border-white/50">
+                                <div>
+                                    <p class="font-bold text-xl">Gemini</p>
+                                    <p class="text-sm opacity-80">已修复 12 张图片</p>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="p-4 space-y-2">
+                             <a href="#" class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i data-lucide="settings" class="w-5 h-5 mr-3 text-gray-500"></i>
+                                    <span class="text-gray-700">设置中心</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                            </a>
+                             <a href="#" class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i data-lucide="info" class="w-5 h-5 mr-3 text-gray-500"></i>
+                                    <span class="text-gray-700">关于我们</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                            </a>
+                            <a href="#" class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i data-lucide="shield" class="w-5 h-5 mr-3 text-gray-500"></i>
+                                    <span class="text-gray-700">隐私政策</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                            </a>
+                             <a href="#" class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i data-lucide="file-text" class="w-5 h-5 mr-3 text-gray-500"></i>
+                                    <span class="text-gray-700">用户协议</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                            </a>
+                             <div class="pt-4">
+                                <button onclick="logout()" class="w-full bg-white text-red-500 font-semibold py-3 rounded-lg shadow-sm hover:bg-red-50">退出登录</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部导航 -->
+                <nav class="bottom-nav w-full bg-white flex justify-around p-2">
+                    <button onclick="switchTab('home')" class="bottom-nav-item flex-1 flex flex-col items-center justify-center text-gray-500 text-xs p-1 active">
+                        <i data-lucide="home" class="w-6 h-6 mb-1"></i>
+                        <p>首页</p>
+                    </button>
+                    <button onclick="switchTab('history')" class="bottom-nav-item flex-1 flex flex-col items-center justify-center text-gray-500 text-xs p-1">
+                        <i data-lucide="history" class="w-6 h-6 mb-1"></i>
+                        <p>历史</p>
+                    </button>
+                    <button onclick="switchTab('me')" class="bottom-nav-item flex-1 flex flex-col items-center justify-center text-gray-500 text-xs p-1">
+                        <i data-lucide="user" class="w-6 h-6 mb-1"></i>
+                        <p>我的</p>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- 编辑页 -->
+            <div id="page-edit" class="page flex-col bg-gray-800">
+                <header class="flex-shrink-0 flex items-center justify-between p-3 text-white bg-gray-900/50">
+                    <button onclick="navigateTo('page-main')" class="p-2 rounded-full hover:bg-white/10">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </button>
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 rounded-full hover:bg-white/10"><i data-lucide="undo-2" class="w-6 h-6"></i></button>
+                        <button class="p-2 rounded-full hover:bg-white/10"><i data-lucide="redo-2" class="w-6 h-6"></i></button>
+                    </div>
+                    <button onclick="navigateTo('page-processing')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">开始修复</button>
+                </header>
+                
+                <div class="flex-grow flex items-center justify-center overflow-hidden p-2">
+                    <canvas id="edit-canvas" class="max-w-full max-h-full rounded-lg bg-gray-500"></canvas>
+                </div>
+
+                <footer class="flex-shrink-0 p-4 bg-gray-900/50 space-y-4">
+                    <div class="flex items-center space-x-2 bg-gray-700/50 p-2 rounded-full">
+                        <button id="tool-brush" class="tool-icon selected flex-1 flex items-center justify-center p-2 rounded-full">
+                            <i data-lucide="brush" class="w-6 h-6"></i>
+                        </button>
+                        <button id="tool-eraser" class="tool-icon flex-1 flex items-center justify-center p-2 rounded-full">
+                            <i data-lucide="eraser" class="w-6 h-6"></i>
+                        </button>
+                        <button class="tool-icon flex-1 flex items-center justify-center p-2 rounded-full">
+                            <i data-lucide="scan" class="w-6 h-6"></i>
+                        </button>
+                        <button class="tool-icon flex-1 flex items-center justify-center p-2 rounded-full">
+                           <i data-lucide="trash" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center text-white">
+                        <i data-lucide="circle-dot" class="w-5 h-5 mr-3"></i>
+                        <input type="range" min="1" max="100" value="20" class="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </footer>
+            </div>
+
+            <!-- 处理页 -->
+             <div id="page-processing" class="page bg-black/50 backdrop-blur-sm items-center justify-center text-white">
+                <div class="text-center">
+                    <div class="w-16 h-16 border-4 border-dashed border-white rounded-full animate-spin mb-6"></div>
+                    <p class="text-lg font-semibold">AI修复中，请稍候...</p>
+                    <p class="text-sm opacity-70">这可能需要几十秒时间</p>
+                    <button onclick="navigateTo('page-edit')" class="mt-8 bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-6 rounded-full transition">
+                        取消
+                    </button>
+                </div>
+            </div>
+
+            <!-- 结果页 -->
+            <div id="page-result" class="page flex-col bg-gray-800">
+                <header class="flex-shrink-0 flex items-center justify-between p-3 text-white bg-gray-900/50">
+                    <button onclick="navigateTo('page-main')" class="p-2 rounded-full hover:bg-white/10">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                    <h2 class="font-semibold">修复完成</h2>
+                     <button class="p-2 rounded-full hover:bg-white/10">
+                        <i data-lucide="share-2" class="w-6 h-6"></i>
+                    </button>
+                </header>
+
+                <div class="flex-grow flex items-center justify-center overflow-hidden p-2 relative">
+                    <div id="comparison-container" class="relative max-w-full max-h-full aspect-auto">
+                        <img id="result-image" src="https://placehold.co/400x600/6366f1/ffffff?text=修复后" class="block w-full h-auto rounded-lg pointer-events-none" alt="修复后">
+                        <div id="original-image-container" class="absolute top-0 left-0 h-full w-1/2 overflow-hidden pointer-events-none">
+                            <img src="https://placehold.co/400x600/a5b4fc/ffffff?text=原图" class="block h-full max-w-none rounded-lg pointer-events-none" alt="原图">
+                        </div>
+                    </div>
+                     <input type="range" min="0" max="100" value="50" class="comparison-slider" oninput="updateComparison(this.value)">
+                </div>
+
+                 <footer class="flex-shrink-0 p-4 bg-gray-900/50 flex items-center justify-around">
+                    <button onclick="navigateTo('page-main')" class="flex flex-col items-center text-white/80 hover:text-white">
+                        <i data-lucide="home" class="w-6 h-6 mb-1"></i>
+                        <span class="text-xs">返回首页</span>
+                    </button>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full flex items-center transition shadow-lg shadow-blue-500/30">
+                        <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+                        保存到相册
+                    </button>
+                     <button onclick="navigateTo('page-edit')" class="flex flex-col items-center text-white/80 hover:text-white">
+                        <i data-lucide="rotate-cw" class="w-6 h-6 mb-1"></i>
+                        <span class="text-xs">再次编辑</span>
+                    </button>
+                </footer>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // 初始化 Lucide Icons
+        lucide.createIcons();
+
+        let currentPage = 'page-login';
+
+        function navigateTo(pageId) {
+            document.getElementById(currentPage).classList.remove('active');
+            document.getElementById(pageId).classList.add('active');
+            currentPage = pageId;
+
+            // 如果进入编辑页, 设置canvas大小
+            if (pageId === 'page-edit') {
+                setupCanvas();
+            }
+             // 如果进入结果页, 重置对比滑块
+            if (pageId === 'page-result') {
+                updateComparison(50);
+                document.querySelector('.comparison-slider').value = 50;
+            }
+        }
+
+        function login() {
+            // 模拟登录成功
+            navigateTo('page-main');
+        }
+        
+        function logout() {
+            // 模拟登出
+            switchTab('home'); // 重置到底部导航第一个
+            navigateTo('page-login');
+        }
+
+        function switchTab(tabId) {
+            // 隐藏所有tab内容
+            document.querySelectorAll('#main-content .tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            // 显示选中的tab内容
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // 更新底部导航样式
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.bottom-nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // 编辑页Canvas设置
+        function setupCanvas() {
+            const canvas = document.getElementById('edit-canvas');
+            const container = canvas.parentElement;
+            const ctx = canvas.getContext('2d');
+            
+            // 模拟加载图片
+            const img = new Image();
+            img.src = 'https://placehold.co/400x600/a5b4fc/ffffff?text=在此处绘制蒙版';
+            img.onload = () => {
+                const containerRatio = container.clientWidth / container.clientHeight;
+                const imgRatio = img.width / img.height;
+
+                if (containerRatio > imgRatio) {
+                    canvas.height = container.clientHeight;
+                    canvas.width = canvas.height * imgRatio;
+                } else {
+                    canvas.width = container.clientWidth;
+                    canvas.height = canvas.width / imgRatio;
+                }
+                
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // 编辑页工具选择
+        const brush = document.getElementById('tool-brush');
+        const eraser = document.getElementById('tool-eraser');
+        brush.addEventListener('click', () => {
+            brush.classList.add('selected');
+            eraser.classList.remove('selected');
+        });
+        eraser.addEventListener('click', () => {
+            eraser.classList.add('selected');
+            brush.classList.remove('selected');
+        });
+
+        // 模拟处理过程
+        function startProcessing() {
+            navigateTo('page-processing');
+            setTimeout(() => {
+                navigateTo('page-result');
+            }, 3000); // 模拟3秒处理时间
+        }
+        
+        // 重写 '开始修复' 按钮的 onclick
+        document.querySelector('#page-edit button[onclick^="navigateTo"]').onclick = startProcessing;
+
+
+        // 结果页对比
+        function updateComparison(value) {
+            const container = document.getElementById('original-image-container');
+            if(container) {
+                container.style.width = value + '%';
+            }
+        }
+
+        // 窗口加载时初始化
+        window.onload = function() {
+            // 可以在此添加自动登录逻辑
+        };
+    </script>
+</body>
+</html>
