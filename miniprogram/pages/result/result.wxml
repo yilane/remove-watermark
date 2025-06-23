@@ -1,0 +1,7 @@
+<!--pages/result/result.wxml-->
+<view class="container">
+  <view class="result-placeholder">
+    <text>结果展示页面</text>
+    <text>（将在后续任务中实现）</text>
+  </view>
+</view>

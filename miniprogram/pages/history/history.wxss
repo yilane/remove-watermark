@@ -1,0 +1,151 @@
+/* pages/history/history.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  padding: 32rpx;
+}
+
+/* 筛选器 */
+.filter-bar {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.filter-item {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 28rpx;
+  color: #374151;
+}
+
+.arrow-icon {
+  font-size: 20rpx;
+  color: #9ca3af;
+}
+
+/* 历史记录列表 */
+.history-list {
+  background: #ffffff;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.thumbnail {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+  background-color: #f3f4f6;
+}
+
+.item-info {
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 8rpx;
+}
+
+.time {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-bottom: 12rpx;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.mode-tag {
+  padding: 4rpx 12rpx;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  font-size: 20rpx;
+  border-radius: 8rpx;
+}
+
+.status-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+}
+
+.status-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-processing {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.item-actions {
+  padding: 16rpx;
+}
+
+.action-icon {
+  font-size: 32rpx;
+  color: #9ca3af;
+  padding: 8rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #9ca3af;
+  margin-bottom: 40rpx;
+}
+
+.start-btn {
+  width: 280rpx;
+  height: 80rpx;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  border: none;
+} 

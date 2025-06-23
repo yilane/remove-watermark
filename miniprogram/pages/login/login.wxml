@@ -1,0 +1,41 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <!-- 顶部Logo区域 -->
+  <view class="logo-section">
+    <view class="logo-placeholder">
+      <text class="logo-text">IO</text>
+    </view>
+    <text class="app-name">IOPaint</text>
+    <text class="app-slogan">您的随身AI图像修复专家</text>
+  </view>
+
+  <!-- 登录按钮区域 -->
+  <view class="login-section">
+    <button
+      class="wechat-login-btn"
+      type="primary"
+      size="default"
+      loading="{{isLogging}}"
+      disabled="{{isLogging}}"
+      bindtap="handleWechatLogin"
+    >
+      <text wx:if="{{!isLogging}}" class="wechat-icon">微</text>
+      {{isLogging ? '登录中...' : '微信一键登录'}}
+    </button>
+    
+    <!-- 隐私提示 -->
+    <view class="privacy-tips">
+      <text>登录即表示您已阅读并同意</text>
+      <text class="link" bindtap="showPrivacy">《隐私政策》</text>
+      <text>与</text>
+      <text class="link" bindtap="showTerms">《用户协议》</text>
+    </view>
+  </view>
+
+  <!-- 底部装饰 -->
+  <view class="bottom-decoration">
+    <view class="decoration-circle circle-1"></view>
+    <view class="decoration-circle circle-2"></view>
+    <view class="decoration-circle circle-3"></view>
+  </view>
+</view> 

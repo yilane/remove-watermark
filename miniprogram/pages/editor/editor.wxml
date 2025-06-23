@@ -1,0 +1,7 @@
+<!--pages/editor/editor.wxml-->
+<view class="container">
+  <view class="editor-placeholder">
+    <text>图像编辑器页面</text>
+    <text>（将在后续任务中实现）</text>
+  </view>
+</view>

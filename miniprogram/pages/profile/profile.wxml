@@ -1,0 +1,51 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 用户信息区域 -->
+  <view class="user-section">
+    <view class="user-avatar-placeholder">
+      <text class="user-avatar-text">{{userInfo.nickName ? userInfo.nickName.charAt(0) : 'G'}}</text>
+    </view>
+    <text class="user-name">{{userInfo.nickName || 'Gemini'}}</text>
+    <text class="user-stats">已修复 12 张图片</text>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="goToSettings">
+      <view class="menu-left">
+        <text class="menu-icon">⚙️</text>
+        <text class="menu-text">设置中心</text>
+      </view>
+      <text class="arrow-right">＞</text>
+    </view>
+    
+    <view class="menu-item" bindtap="goToAbout">
+      <view class="menu-left">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于我们</text>
+      </view>
+      <text class="arrow-right">＞</text>
+    </view>
+    
+    <view class="menu-item" bindtap="showPrivacy">
+      <view class="menu-left">
+        <text class="menu-icon">🛡️</text>
+        <text class="menu-text">隐私政策</text>
+      </view>
+      <text class="arrow-right">＞</text>
+    </view>
+    
+    <view class="menu-item" bindtap="showTerms">
+      <view class="menu-left">
+        <text class="menu-icon">📄</text>
+        <text class="menu-text">用户协议</text>
+      </view>
+      <text class="arrow-right">＞</text>
+    </view>
+  </view>
+
+  <!-- 退出按钮 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+</view>
