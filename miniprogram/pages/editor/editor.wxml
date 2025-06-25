@@ -1,7 +1,7 @@
 <!--pages/editor/editor.wxml-->
 <view class="editor-container">
   <!-- 顶部导航 -->
-  <view class="editor-header">
+  <view class="editor-header" style="padding-top: {{statusBarHeight + 20}}px;">
     <view class="header-left" bind:tap="goBack">
       <text class="back-icon">←</text>
       <text class="back-text">返回</text>
@@ -13,29 +13,67 @@
     </view>
   </view>
 
+  <!-- 图片上传区域 -->
+  <view class="upload-area" wx:if="{{showUploadArea}}" style="padding-top: {{headerHeight}}px;">
+    <view class="upload-content" bind:tap="selectImage">
+      <text class="upload-icon">📷</text>
+      <text class="upload-title">选择图片</text>
+      <text class="upload-desc">点击选择要修复的图片</text>
+      <text class="upload-tips">支持JPG、PNG格式，最大10MB</text>
+    </view>
+  </view>
+
   <!-- 画布区域 -->
-  <view class="canvas-area">
-    <view class="canvas-container">
-      <!-- 原始图片 -->
-      <image 
-        wx:if="{{originalImage}}"
-        src="{{originalImage}}" 
-        mode="aspectFit"
-        class="original-image"
-        bind:load="onImageLoad"
-      />
+  <view class="canvas-area" wx:else style="padding-top: {{headerHeight}}px;">
+    <!-- 重新选择图片按钮 -->
+    <view class="reselect-btn" bind:tap="reSelectImage">
+      <text class="reselect-icon">🔄</text>
+      <text class="reselect-text">重新选择</text>
+    </view>
+    
+    <!-- 缩放控制按钮 -->
+    <view class="zoom-controls">
+      <view class="zoom-btn" bind:tap="zoomOut">
+        <text class="zoom-icon">-</text>
+      </view>
+      <text class="zoom-text">{{scalePercent}}%</text>
+      <view class="zoom-btn" bind:tap="zoomIn">
+        <text class="zoom-icon">+</text>
+      </view>
+    </view>
+    
+    <view 
+      class="canvas-container" 
+      style="width: 100%; height: 100%;"
+      bind:touchstart="onTouchStart"
+      bind:touchmove="onTouchMove"
+      bind:touchend="onTouchEnd"
+    >
+      <!-- 图片容器 -->
+      <view 
+        class="image-container"
+        style="transform: translate({{translateX}}px, {{translateY}}px) scale({{scale}});"
+      >
+        <!-- 原始图片 -->
+        <image 
+          wx:if="{{originalImage}}"
+          src="{{originalImage}}" 
+          mode="aspectFit"
+          class="original-image"
+          style="width: {{imageWidth}}px; height: {{imageHeight}}px;"
+          bind:load="onImageLoad"
+          bind:error="onImageError"
+        />
+      </view>
       
-      <!-- 绘制画布 -->
+      <!-- 绘制画布 - 移到image-container外面 -->
       <canvas 
         type="2d" 
         id="drawCanvas"
         class="draw-canvas"
-        bind:touchstart="onTouchStart"
-        bind:touchmove="onTouchMove"
-        bind:touchend="onTouchEnd"
       />
       
-      <!-- 蒙版预览 -->
+      <!-- 蒙版预览 - 移到image-container外面 -->
       <canvas 
         type="2d" 
         id="maskCanvas"
@@ -80,12 +118,12 @@
       </view>
       
       <view 
-        class="tool-item {{currentTool === 'eraser' ? 'active' : ''}}"
+        class="tool-item {{currentTool === 'move' ? 'active' : ''}}"
         bind:tap="selectTool"
-        data-tool="eraser"
+        data-tool="move"
       >
-        <text class="tool-icon">🧽</text>
-        <text class="tool-text">橡皮擦</text>
+        <text class="tool-icon">👋</text>
+        <text class="tool-text">移动</text>
       </view>
       
       <view 

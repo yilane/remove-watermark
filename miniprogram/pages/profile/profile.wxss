@@ -154,6 +154,27 @@
 .logout-btn {
   width: 100%;
   border-radius: 12rpx;
+  background-color: white !important;
+  border: 1rpx solid #fee2e2 !important;
+}
+
+.logout-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+}
+
+.logout-icon {
+  margin-right: 16rpx;
+  font-size: 32rpx;
+  color: #ef4444;
+}
+
+.logout-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ef4444;
 }
 
 /* 版本信息 */

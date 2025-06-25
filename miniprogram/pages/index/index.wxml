@@ -14,8 +14,10 @@
       bind:tap="startEdit"
       class="start-btn"
     >
-      <text slot="icon">📤</text>
-      开始创作
+      <view class="button-content">
+        <t-icon name="upload" class="upload-icon" />
+        <text class="button-text">开始创作</text>
+      </view>
     </t-button>
   </view>
 

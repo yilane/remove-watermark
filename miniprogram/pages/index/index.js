@@ -127,9 +127,9 @@ Page({
         if (res.tempFiles && res.tempFiles.length > 0) {
           const tempFilePath = res.tempFiles[0].tempFilePath
           
-          // 跳转到编辑页面
+          // 跳转到编辑页面 - 修正参数名为image
           wx.navigateTo({
-            url: `/pages/editor/editor?imagePath=${encodeURIComponent(tempFilePath)}`
+            url: `/pages/editor/editor?image=${encodeURIComponent(tempFilePath)}`
           })
         }
       },

@@ -75,7 +75,10 @@
         class="logout-btn"
         bind:tap="logout"
       >
-        退出登录
+        <view class="logout-content">
+          <t-icon name="logout" class="logout-icon" />
+          <text class="logout-text">退出登录</text>
+        </view>
       </t-button>
     </view>
   </view>

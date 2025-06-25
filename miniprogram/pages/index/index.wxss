@@ -140,6 +140,22 @@
   box-shadow: 0 4rpx 16rpx rgba(255, 255, 255, 0.3);
 }
 
+.start-btn .button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-btn .upload-icon {
+  margin-right: 16rpx;
+  font-size: 32rpx;
+}
+
+.start-btn .button-text {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
 /* 最近作品 */
 .recent-works {
   margin-bottom: 32rpx;
